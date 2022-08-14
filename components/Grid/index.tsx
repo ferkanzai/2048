@@ -9,16 +9,12 @@ const Grid = ({ cells }: Props) => {
   const grid = cells * cells;
   const { cellsArray } = useGame(grid);
 
-  // move right
-  // 0 -> 1 -> 2 -> 3
-  // 4 -> 5 -> 6 -> 7
-  // 8 -> 9 -> 10 -> 11
-  // 12 -> 13 -> 14 -> 15
-
   return (
     <GridWrapper cells={cells}>
       {cellsArray.map(({ position, value }) => (
-        <Cell key={position}>{value}</Cell>
+        <Cell key={position} value={value}>
+          {value}
+        </Cell>
       ))}
     </GridWrapper>
   );
@@ -34,13 +30,29 @@ const GridWrapper = styled.div<{ cells: number }>`
   padding: 10px;
 `;
 
-const Cell = styled.div`
+const Cell = styled.div<{ value: number | null }>`
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   align-items: center;
-  background-color: #eee4da;
+  background-color: ${({ value }) => {
+    if (value === null) return '#cdc1b4';
+    if (value === 2) return '#eee4da';
+    if (value === 4) return '#ede0c8';
+    if (value === 8) return '#f2b179';
+    if (value === 16) return '#f59563';
+    if (value === 32) return '#f67c5f';
+    if (value === 64) return '#f65e3b';
+    if (value === 128) return '#edcf72';
+    if (value === 256) return '#edcc61';
+    if (value === 512) return '#edc850';
+    if (value === 1024) return '#edc53f';
+    if (value >= 2048) return '#edc22e';
+  }};
   border-radius: 4px;
-  border: 1px solid #f9f6f2;
   box-sizing: border-box;
-  color: #776e65;
+  color: ${({ value }) => {
+    if (value === null || value <= 4) return '#776e65';
+    if (value > 4) return '#f9f6f2';
+  }};
   display: flex;
   font-size: 1.5rem;
   font-weight: bold;
