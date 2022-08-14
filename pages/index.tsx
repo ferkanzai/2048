@@ -9,6 +9,7 @@ const Home: NextPage = () => {
       <Head>
         <title>2048</title>
         <meta name="description" content="Creating the 2048 game" />
+        <link rel="icon" type="image/x-icon" href="2048.ico"></link>
         <style>
           {`
             html, body {
