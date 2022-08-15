@@ -102,8 +102,8 @@ const moveAndMergeCells = (
         ...cell,
         positionX,
         positionY,
-        merged:
-          cell.merged ||
+        moved:
+          cell.moved ||
           (nullArray.length === 4
             ? false
             : horizontal
@@ -136,7 +136,7 @@ const moveAndMergeCells = (
     second.value !== null
   ) {
     const newCells = mergeTwoCells(first, second);
-    newArr.push({ ...newCells[0], merged: true });
+    newArr.push({ ...newCells[0], merged: true, moved: true });
     arrToSend = [newCells[1], ...rest];
   } else {
     newArr.push(first);
@@ -275,7 +275,7 @@ export const gridHasPossibleMove = (
       isLeftOrUp(direction) ? row[0].positionY : row[row.length - 1].positionY
     );
 
-    return moved.filter(({ merged }) => merged).length > 0;
+    return moved.filter(({ moved }) => moved).length > 0;
   });
 
   return rowCanMove.some((row) => row);

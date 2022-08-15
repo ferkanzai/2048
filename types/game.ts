@@ -4,6 +4,7 @@ export type Direction = 'left' | 'right' | 'up' | 'down';
 
 export type Cell = {
   merged?: boolean;
+  moved?: boolean;
   newTile?: boolean;
   positionX: number;
   positionY: number;

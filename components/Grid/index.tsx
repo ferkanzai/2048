@@ -39,6 +39,96 @@ const Cell = styled.div<{
   newTile?: boolean;
   value: number | null;
 }>`
+  @keyframes appear {
+    0% {
+      opacity: 0;
+      -webkit-transform: scale(0);
+      -moz-transform: scale(0);
+    }
+
+    100% {
+      opacity: 1;
+      -webkit-transform: scale(1);
+      -moz-transform: scale(1);
+    }
+  }
+
+  @-webkit-keyframes pop {
+    0% {
+      -webkit-transform: scale(0);
+      -moz-transform: scale(0);
+    }
+
+    50% {
+      -webkit-transform: scale(1.2);
+      -moz-transform: scale(1.2);
+    }
+
+    100% {
+      -webkit-transform: scale(1);
+      -moz-transform: scale(1);
+    }
+  }
+  @-moz-keyframes pop {
+    0% {
+      -webkit-transform: scale(0);
+      -moz-transform: scale(0);
+    }
+
+    50% {
+      -webkit-transform: scale(1.2);
+      -moz-transform: scale(1.2);
+    }
+
+    100% {
+      -webkit-transform: scale(1);
+      -moz-transform: scale(1);
+    }
+  }
+  @keyframes pop {
+    0% {
+      -webkit-transform: scale(0);
+      -moz-transform: scale(0);
+    }
+
+    50% {
+      -webkit-transform: scale(1.2);
+      -moz-transform: scale(1.2);
+    }
+
+    100% {
+      -webkit-transform: scale(1);
+      -moz-transform: scale(1);
+    }
+  }
+
+  ${({ newTile }) => {
+    if (newTile)
+      return `
+        -webkit-animation: appear 200ms ease 100ms;
+        -moz-animation: appear 200ms ease 100ms;
+        -webkit-animation-fill-mode: both;
+        -moz-animation-fill-mode: both;
+    `;
+  }}
+
+  ${({ merged, newTile }) => {
+    if (merged)
+      return `
+        z-index: 20;
+        -webkit-animation: pop 200ms ease 100ms;
+        -moz-animation: pop 200ms ease 100ms;
+        -webkit-animation-fill-mode: both;
+        -moz-animation-fill-mode: both;
+    `;
+  }}
+
+  -webkit-transition: 100ms ease-in-out;
+  -moz-transition: 100ms ease-in-out;
+  -webkit-transition-property: top, left;
+  -moz-transition-property: top, left;
+  transition: 100ms ease-in-out;
+  transition-property: top, left;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   align-items: center;
   background-color: ${({ value }) => {
