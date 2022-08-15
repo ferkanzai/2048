@@ -1,15 +1,11 @@
-import { RefCallback, useEffect, useRef, useState } from 'react';
+import { RefCallback, useEffect, useState } from 'react';
 import { SwipeEventData, useSwipeable } from 'react-swipeable';
-import { Cell } from '../types/game';
-import { calculateNewGrid } from '../utils/game';
+import { Grid } from '../types/game';
+import { calculateNewGrid, generateNewGrid } from '../utils/game';
 
-export const useGame = (grid: number) => {
-  const [cellsArray, setCellsArray] = useState<Cell[]>(() => {
-    return Array.from({ length: grid }).map((_, index) => ({
-      position: index,
-      value: null,
-    }));
-  });
+export const useGame = (length: number) => {
+  const [grid, setGrid] = useState<Grid>(() => generateNewGrid(length));
+  const [finished, setFinished] = useState(false);
 
   useEffect(() => {
     document.body.addEventListener('keydown', (e: KeyboardEvent) =>
@@ -26,85 +22,62 @@ export const useGame = (grid: number) => {
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.code === 'ArrowRight') {
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'right');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'right');
       });
     }
 
     if (e.code === 'ArrowLeft') {
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'left');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'left');
       });
     }
 
     if (e.code === 'ArrowUp') {
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'up');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'up');
       });
     }
 
     if (e.code === 'ArrowDown') {
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'down');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'down');
       });
     }
 
     e.stopImmediatePropagation();
     e.stopPropagation();
-
-    setCellsArray((prevCellsArray) => {
-      return fillRandomCell(prevCellsArray);
-    });
   };
 
   const handleSwipe = (eventData: SwipeEventData) => {
     if (eventData.dir === 'Right') {
       console.log('right');
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'right');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'right');
       });
     }
 
     if (eventData.dir === 'Left') {
       console.log('left');
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'left');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'left');
       });
     }
 
     if (eventData.dir === 'Up') {
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'up');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'up');
       });
     }
 
     if (eventData.dir === 'Down') {
-      setCellsArray((prevCellsArray) => {
-        return calculateNewGrid(prevCellsArray, 'down');
+      setGrid((prevGrid) => {
+        return calculateNewGrid(prevGrid, 'down');
       });
     }
 
     eventData.event.preventDefault();
     eventData.event.stopPropagation();
-
-    setCellsArray((prevCellsArray) => {
-      return fillRandomCell(prevCellsArray);
-    });
-  };
-
-  const fillRandomCell = (arr: Cell[]): Cell[] => {
-    const cellsWithNullValue = arr.filter((cell) => cell.value === null);
-
-    if (cellsWithNullValue.length === 0) return [];
-
-    const randomIndex =
-      cellsWithNullValue[Math.floor(Math.random() * cellsWithNullValue.length)]
-        .position;
-    const randomValue = Math.random() < 0.9 ? 2 : 4;
-
-    const newCellsArray = [...arr];
-    newCellsArray[randomIndex].value = randomValue;
-    return newCellsArray;
   };
 
   const config = {
@@ -128,6 +101,7 @@ export const useGame = (grid: number) => {
   });
 
   return {
-    cellsArray,
+    grid,
+    finished,
   };
 };

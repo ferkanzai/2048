@@ -1,80 +1,232 @@
-import { Cell, Direction, Nullable } from '../types/game';
+import { Cell, Direction, Grid } from '../types/game';
+
+export const isHorizontal = (direction: Direction): boolean =>
+  direction === 'left' || direction === 'right' ? true : false;
 
 export const isLeftOrUp = (direction: Direction): boolean =>
   direction === 'left' || direction === 'up';
 
-export const isHorizontal = (direction: Direction): 'vertical' | 'horizontal' =>
-  direction === 'left' || direction === 'right' ? 'horizontal' : 'vertical';
+const transponseGrid = (array: Grid): Grid =>
+  array[0].map((_, colIndex) => array.map((row) => row[colIndex]));
 
-// IMPORTANT: for right or down direction, the array must be reversed when calling the function
-export const moveAndAddNumbers = (
-  arr: Array<Nullable<number>>,
-  length: number,
-  direction: Direction = 'right',
-  newArr: Array<Nullable<number>> = []
-): Array<Nullable<number>> => {
-  const arrToCheck = arr.filter((item) => item !== null);
+const reverseRow = (row: Cell[]): Cell[] => [...row].reverse();
 
-  if (arrToCheck.length === 0) {
-    const nullArray = Array.from(
-      { length: length - newArr.length },
-      () => null
-    );
-    return isLeftOrUp(direction)
-      ? [...newArr, ...nullArray]
-      : [...nullArray, ...newArr.reverse()];
+const mergeTwoCells = (first: Cell, second: Cell): Cell[] => {
+  if (
+    (first.value === null && second.value === null) ||
+    (first.value !== null && second.value === null)
+  ) {
+    return [first, second];
   }
 
-  const [first, second, ...rest] = arrToCheck;
-  let arrToSend: Array<Nullable<number>> = [];
+  if (first.value === null && second.value !== null) {
+    return [
+      {
+        ...first,
+        value: second.value,
+      },
+      {
+        ...second,
+        value: null,
+      },
+    ];
+  }
+
+  if (
+    first.value !== null &&
+    second.value !== null &&
+    first.value === second.value
+  ) {
+    return [
+      {
+        ...first,
+        value: (first.value || 0) + (second.value || 0),
+      },
+      {
+        ...second,
+        value: null,
+      },
+    ];
+  }
+
+  return [first, second];
+};
+
+// IMPORTANT: for right or down direction, the array must be reversed when calling the function
+const moveAndMergeCells = (
+  row: Cell[],
+  length: number,
+  direction: Direction = 'left',
+  initialX: number,
+  initialY: number,
+  newArr: Cell[] = []
+): Cell[] => {
+  const cellsWithValue = row.filter(({ value }) => value !== null);
+
+  if (row.length === 0) {
+    const horizontal = isHorizontal(direction);
+
+    const nullArray: Cell[] = Array.from({
+      length: length - newArr.filter(Boolean).length,
+    }).map(() => ({
+      value: null,
+      positionX: 0,
+      positionY: 0,
+    }));
+    // console.log(newArr)
+
+    const numbersAndNulls = (
+      isLeftOrUp(direction)
+        ? [...newArr.filter(Boolean), ...nullArray]
+        : reverseRow([...nullArray, ...reverseRow(newArr.filter(Boolean))])
+    ).map((cell, index) => {
+      return {
+        ...cell,
+        positionX: horizontal
+          ? isLeftOrUp(direction)
+            ? initialX + index
+            : initialX - index
+          : initialX,
+        positionY: horizontal
+          ? initialY
+          : isLeftOrUp(direction)
+          ? initialY + index
+          : initialY - index,
+      };
+    });
+
+    return numbersAndNulls;
+  }
+
+  const [first, second, ...rest] = cellsWithValue;
+  let arrToSend: Cell[] = [];
 
   if (!second) {
     newArr.push(first);
-    return moveAndAddNumbers(arrToSend, length, direction, newArr);
+    return moveAndMergeCells(
+      arrToSend,
+      length,
+      direction,
+      initialX,
+      initialY,
+      newArr
+    );
   }
 
-  if (first === second && first !== null && second !== null) {
-    newArr.push(first + second);
-    arrToSend = rest;
+  if (
+    first.value === second.value &&
+    first.value !== null &&
+    second.value !== null
+  ) {
+    const newCells = mergeTwoCells(first, second);
+    newArr.push(newCells[0]);
+    arrToSend = [newCells[1], ...rest];
   } else {
     newArr.push(first);
     arrToSend = [second, ...rest];
   }
 
-  return moveAndAddNumbers(arrToSend, length, direction, newArr);
-};
-
-export const divideCells = (
-  inputArray: Cell[],
-  direction: 'vertical' | 'horizontal',
-  length = 4
-): Cell[][] => {
-  return inputArray.reduce((acc, item, index) => {
-    const chunkIndex =
-      direction === 'horizontal' ? Math.floor(index / length) : index % length;
-    if (!acc[chunkIndex]) acc[chunkIndex] = [];
-    acc[chunkIndex].push(item);
-    return acc;
-  }, [] as Cell[][]);
-};
-
-export const putNumbersInPosition = (
-  arr: Cell[],
-  direction: Direction
-): Cell[] => {
-  const valuesArr = arr.map((cell) => cell.value);
-  const numArr = isLeftOrUp(direction) ? valuesArr : [...valuesArr].reverse();
-
-  const arrToPut = moveAndAddNumbers(numArr, arr.length, direction);
-
-  return arr.map((cell, index) => ({ ...cell, value: arrToPut[index] }));
+  return moveAndMergeCells(
+    arrToSend,
+    length,
+    direction,
+    initialX,
+    initialY,
+    newArr
+  );
 };
 
 export const calculateNewGrid = (
-  arr: Cell[],
+  grid: Grid,
   moveDirection: Direction
-): Cell[] => {
-  return divideCells(arr, isHorizontal(moveDirection))
-    .flatMap((item) => putNumbersInPosition(item, moveDirection))
-    .sort((a, b) => a.position - b.position);
+): Grid => {
+  const gridHasEmptyCell = grid.flat().some(({ value }) => value === null);
+
+  if (!gridHasEmptyCell) return grid;
+
+  const transponsedGrid = isHorizontal(moveDirection)
+    ? grid
+    : transponseGrid(grid);
+
+  const newGrid: Grid = transponsedGrid.map((row) =>
+    moveAndMergeCells(
+      isLeftOrUp(moveDirection) ? row : reverseRow(row),
+      row.length,
+      moveDirection,
+      isLeftOrUp(moveDirection)
+        ? row[0].positionX
+        : row[row.length - 1].positionX,
+      isLeftOrUp(moveDirection)
+        ? row[0].positionY
+        : row[row.length - 1].positionY
+    )
+  );
+
+  const transponsedBackGrid = isHorizontal(moveDirection)
+    ? newGrid
+    : transponseGrid(newGrid);
+  const transponsedBackGridHasEmptyCell = transponsedBackGrid
+    .flat()
+    .some(({ value }) => value === null);
+
+  return transponsedBackGridHasEmptyCell ? fillRandomCell(newGrid) : newGrid;
+};
+
+export const chunkArray = (myArray: Cell[], chunk_size: number): Grid => {
+  var index = 0;
+  var arrayLength = myArray.length;
+  var tempArray: Grid = [];
+
+  for (index = 0; index < arrayLength; index += chunk_size) {
+    const myChunk = myArray.slice(index, index + chunk_size);
+    // Do something if you want with the group
+    tempArray.push(myChunk);
+  }
+
+  return tempArray;
+};
+
+export const fillRandomCell = (grid: Grid): Grid => {
+  const length = grid.length;
+  const cellsWithValue = grid.flat().filter((cell) => cell.value !== null);
+  const cellsWithNullValue = grid.flat().filter((cell) => cell.value === null);
+
+  if (cellsWithNullValue.length === 0) {
+    return grid;
+  }
+
+  const randomCell =
+    cellsWithNullValue[Math.floor(Math.random() * cellsWithNullValue.length)];
+  const randomValue = Math.random() < 0.9 ? 2 : 4;
+
+  randomCell.value = randomValue;
+
+  const newCellsArray = [...cellsWithValue, ...cellsWithNullValue].sort(
+    (a, b) => {
+      if (a.positionY === b.positionY) {
+        return a.positionX - b.positionX;
+      }
+
+      return a.positionY - b.positionY;
+    }
+  );
+
+  return chunkArray(newCellsArray, length);
+};
+
+export const generateNewGrid = (length: number = 4): Grid => {
+  const arr: Grid = [];
+
+  for (let i = 0; i < length; i++) {
+    arr[i] = [];
+    for (let j = 0; j < length; j++) {
+      arr[i][j] = {
+        positionX: j + 1,
+        positionY: i + 1,
+        value: null,
+      };
+    }
+  }
+
+  return arr;
 };

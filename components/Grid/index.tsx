@@ -1,21 +1,20 @@
-import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useGame } from '../../hooks/useGame';
-import { calculateNewGrid } from '../../utils/game';
 
 type Cell = { position: number; value: number | null };
 
 const Grid = ({ cells }: Props) => {
-  const grid = cells * cells;
-  const { cellsArray } = useGame(grid);
+  const { grid } = useGame(cells);
 
   return (
     <GridWrapper cells={cells}>
-      {cellsArray.map(({ position, value }) => (
-        <Cell key={position} value={value}>
-          {value}
-        </Cell>
-      ))}
+      {grid.map((row) =>
+        row.map(({ positionX, positionY, value }) => (
+          <Cell key={`${positionY}-${positionX}`} value={value}>
+            {value}
+          </Cell>
+        ))
+      )}
     </GridWrapper>
   );
 };
