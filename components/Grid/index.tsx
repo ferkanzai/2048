@@ -9,8 +9,13 @@ const Grid = ({ cells }: Props) => {
   return (
     <GridWrapper cells={cells}>
       {grid.map((row) =>
-        row.map(({ positionX, positionY, value }) => (
-          <Cell key={`${positionY}-${positionX}`} value={value}>
+        row.map(({ positionX, positionY, value, newTile, merged }) => (
+          <Cell
+            key={`${positionY}-${positionX}`}
+            merged={merged}
+            newTile={newTile}
+            value={value}
+          >
             {value}
           </Cell>
         ))
@@ -29,7 +34,11 @@ const GridWrapper = styled.div<{ cells: number }>`
   padding: 10px;
 `;
 
-const Cell = styled.div<{ value: number | null }>`
+const Cell = styled.div<{
+  merged?: boolean;
+  newTile?: boolean;
+  value: number | null;
+}>`
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   align-items: center;
   background-color: ${({ value }) => {

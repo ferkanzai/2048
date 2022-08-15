@@ -1,11 +1,43 @@
-import { RefCallback, useEffect, useState } from 'react';
+import { RefCallback, useCallback, useEffect, useState } from 'react';
 import { SwipeEventData, useSwipeable } from 'react-swipeable';
 import { Grid } from '../types/game';
-import { calculateNewGrid, generateNewGrid } from '../utils/game';
+import {
+  calculateNewGrid,
+  generateNewGrid,
+  gridHasPossibleMove,
+} from '../utils/game';
 
 export const useGame = (length: number) => {
   const [grid, setGrid] = useState<Grid>(() => generateNewGrid(length));
-  const [finished, setFinished] = useState(false);
+  // const [isGameOver, setIsGameOver] = useState(false);
+  // const [isGameWon, setIsGameWon] = useState(false);
+  // const [score, setScore] = useState(0);
+  // const [isGameStarted, setIsGameStarted] = useState(false);
+  const [moveCanBeMade, setMoveCanBeMade] = useState({
+    canMoveUp: true,
+    canMoveDown: true,
+    canMoveLeft: true,
+    canMoveRight: true,
+  });
+
+  const getMoveCanBeMade = useCallback((): {
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+    canMoveLeft: boolean;
+    canMoveRight: boolean;
+  } => {
+    const moveLeft = gridHasPossibleMove(grid, 'left');
+    const moveRight = gridHasPossibleMove(grid, 'right');
+    const moveUp = gridHasPossibleMove(grid, 'up');
+    const moveDown = gridHasPossibleMove(grid, 'down');
+
+    return {
+      canMoveLeft: moveLeft,
+      canMoveRight: moveRight,
+      canMoveUp: moveUp,
+      canMoveDown: moveDown,
+    };
+  }, [grid]);
 
   useEffect(() => {
     document.body.addEventListener('keydown', (e: KeyboardEvent) =>
@@ -45,20 +77,20 @@ export const useGame = (length: number) => {
       });
     }
 
+    setMoveCanBeMade((prevState) => ({ ...prevState, ...getMoveCanBeMade() }));
+
     e.stopImmediatePropagation();
     e.stopPropagation();
   };
 
   const handleSwipe = (eventData: SwipeEventData) => {
     if (eventData.dir === 'Right') {
-      console.log('right');
       setGrid((prevGrid) => {
         return calculateNewGrid(prevGrid, 'right');
       });
     }
 
     if (eventData.dir === 'Left') {
-      console.log('left');
       setGrid((prevGrid) => {
         return calculateNewGrid(prevGrid, 'left');
       });
@@ -102,6 +134,9 @@ export const useGame = (length: number) => {
 
   return {
     grid,
-    finished,
+    // isGameOver,
+    // isGameWon,
+    // score,
+    // isGameStarted,
   };
 };
