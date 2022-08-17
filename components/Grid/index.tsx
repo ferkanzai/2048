@@ -1,11 +1,25 @@
+import { useCallback, useEffect } from 'react';
 import styled from 'styled-components';
 import { useGame } from '../../hooks/useGame';
+import { gridHasPossibleMove } from '../../utils/game';
 
 const Grid = () => {
   const { setIsGameOver, grid } = useGame();
 
-const Grid = ({ cells }: Props) => {
-  const { grid } = useGame(cells);
+  const checkIfGameIsOver = useCallback(() => {
+    const leftMove = gridHasPossibleMove(grid, 'left');
+    const rightMove = gridHasPossibleMove(grid, 'right');
+    const upMove = gridHasPossibleMove(grid, 'up');
+    const downMove = gridHasPossibleMove(grid, 'down');
+
+    if (!leftMove && !rightMove && !upMove && !downMove) {
+      setIsGameOver(true);
+    }
+  }, [grid, setIsGameOver]);
+
+  useEffect(() => {
+    checkIfGameIsOver();
+  }, [checkIfGameIsOver, grid]);
 
   return (
     <GridWrapper cells={grid.length}>
