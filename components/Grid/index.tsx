@@ -1,13 +1,14 @@
 import styled from 'styled-components';
 import { useGame } from '../../hooks/useGame';
 
-type Cell = { position: number; value: number | null };
+const Grid = () => {
+  const { setIsGameOver, grid } = useGame();
 
 const Grid = ({ cells }: Props) => {
   const { grid } = useGame(cells);
 
   return (
-    <GridWrapper cells={cells}>
+    <GridWrapper cells={grid.length}>
       {grid.map((row) =>
         row.map(({ positionX, positionY, value, newTile, merged }) => (
           <Cell
@@ -44,6 +45,50 @@ const Cell = styled.div<{
       opacity: 0;
       -webkit-transform: scale(0);
       -moz-transform: scale(0);
+    }
+
+    50% {
+      opacity: 0.5;
+      -webkit-transform: scale(0.5);
+      -moz-transform: scale(0.5);
+    }
+
+    100% {
+      opacity: 1;
+      -webkit-transform: scale(1);
+      -moz-transform: scale(1);
+    }
+  }
+  @-moz-keyframes appear {
+    0% {
+      opacity: 0;
+      -webkit-transform: scale(0);
+      -moz-transform: scale(0);
+    }
+
+    50% {
+      opacity: 0.5;
+      -webkit-transform: scale(0.5);
+      -moz-transform: scale(0.5);
+    }
+
+    100% {
+      opacity: 1;
+      -webkit-transform: scale(1);
+      -moz-transform: scale(1);
+    }
+  }
+  @-webkit-keyframes appear {
+    0% {
+      opacity: 0;
+      -webkit-transform: scale(0);
+      -moz-transform: scale(0);
+    }
+
+    50% {
+      opacity: 0.5;
+      -webkit-transform: scale(0.5);
+      -moz-transform: scale(0.5);
     }
 
     100% {
@@ -112,10 +157,9 @@ const Cell = styled.div<{
     `;
   }}
 
-  ${({ merged, newTile }) => {
+  ${({ merged }) => {
     if (merged)
       return `
-        z-index: 20;
         -webkit-animation: pop 200ms ease 100ms;
         -moz-animation: pop 200ms ease 100ms;
         -webkit-animation-fill-mode: both;
@@ -162,9 +206,5 @@ const Cell = styled.div<{
   padding: 5px;
   width: 60px;
 `;
-
-type Props = {
-  cells: number;
-};
 
 export default Grid;

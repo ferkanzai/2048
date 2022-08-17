@@ -7,37 +7,12 @@ import {
   gridHasPossibleMove,
 } from '../utils/game';
 
-export const useGame = (length: number) => {
-  const [grid, setGrid] = useState<Grid>(() => generateNewGrid(length));
-  // const [isGameOver, setIsGameOver] = useState(false);
+export const useGame = () => {
+  const [grid, setGrid] = useState<Grid>(() => generateNewGrid(4));
+  const [isGameOver, setIsGameOver] = useState(false);
   // const [isGameWon, setIsGameWon] = useState(false);
   // const [score, setScore] = useState(0);
   // const [isGameStarted, setIsGameStarted] = useState(false);
-  const [moveCanBeMade, setMoveCanBeMade] = useState({
-    canMoveUp: true,
-    canMoveDown: true,
-    canMoveLeft: true,
-    canMoveRight: true,
-  });
-
-  const getMoveCanBeMade = useCallback((): {
-    canMoveUp: boolean;
-    canMoveDown: boolean;
-    canMoveLeft: boolean;
-    canMoveRight: boolean;
-  } => {
-    const moveLeft = gridHasPossibleMove(grid, 'left');
-    const moveRight = gridHasPossibleMove(grid, 'right');
-    const moveUp = gridHasPossibleMove(grid, 'up');
-    const moveDown = gridHasPossibleMove(grid, 'down');
-
-    return {
-      canMoveLeft: moveLeft,
-      canMoveRight: moveRight,
-      canMoveUp: moveUp,
-      canMoveDown: moveDown,
-    };
-  }, [grid]);
 
   useEffect(() => {
     document.body.addEventListener('keydown', (e: KeyboardEvent) =>
@@ -76,8 +51,6 @@ export const useGame = (length: number) => {
         return calculateNewGrid(prevGrid, 'down');
       });
     }
-
-    setMoveCanBeMade((prevState) => ({ ...prevState, ...getMoveCanBeMade() }));
 
     e.stopImmediatePropagation();
     e.stopPropagation();
@@ -134,7 +107,10 @@ export const useGame = (length: number) => {
 
   return {
     grid,
-    // isGameOver,
+    isGameOver,
+    setIsGameOver,
+    handleKeyDown,
+    setGrid,
     // isGameWon,
     // score,
     // isGameStarted,

@@ -24,6 +24,7 @@ const mergeTwoCells = (first: Cell, second: Cell): Cell[] => {
       {
         ...first,
         value: second.value,
+        moved: true,
       },
       {
         ...second,
@@ -41,6 +42,8 @@ const mergeTwoCells = (first: Cell, second: Cell): Cell[] => {
       {
         ...first,
         value: (first.value || 0) + (second.value || 0),
+        moved: true,
+        merged: true,
       },
       {
         ...second,
@@ -72,20 +75,23 @@ const moveAndMergeCells = (
       value: null,
       positionX: horizontal
         ? isLeftOrUp(direction)
-          ? cellsWithValue.length + index
-          : index - cellsWithValue.length + 1
+          ? newArr.filter(Boolean).length + index + 1
+          : initialX - newArr.filter(Boolean).length - index
         : initialX,
       positionY: horizontal
         ? initialY
         : isLeftOrUp(direction)
-        ? cellsWithValue.length + index
-        : index - cellsWithValue.length + 1,
+        ? newArr.filter(Boolean).length + index + 1
+        : initialY - newArr.filter(Boolean).length - index,
     }));
 
     const numbersAndNulls = (
       isLeftOrUp(direction)
         ? [...newArr.filter(Boolean), ...nullArray]
-        : reverseRow([...nullArray, ...reverseRow(newArr.filter(Boolean))])
+        : reverseRow([
+            ...reverseRow(nullArray),
+            ...reverseRow(newArr.filter(Boolean)),
+          ])
     ).map((cell, index) => {
       const positionX = horizontal
         ? isLeftOrUp(direction)
@@ -136,7 +142,7 @@ const moveAndMergeCells = (
     second.value !== null
   ) {
     const newCells = mergeTwoCells(first, second);
-    newArr.push({ ...newCells[0], merged: true, moved: true });
+    newArr.push(newCells[0]);
     arrToSend = [newCells[1], ...rest];
   } else {
     newArr.push(first);
@@ -157,11 +163,8 @@ export const calculateNewGrid = (
   grid: Grid,
   moveDirection: Direction
 ): Grid => {
-  // const canGridMove = gridHasPossibleMove(grid, moveDirection);
-  // if (!canGridMove) return grid;
-
-  // const gridHasEmptyCell = grid.flat().some(({ value }) => value === null);
-  // if (!gridHasEmptyCell) return grid;
+  const canGridMove = gridHasPossibleMove(grid, moveDirection);
+  if (!canGridMove) return grid;
 
   const transponsedGrid = isHorizontal(moveDirection)
     ? grid
@@ -172,17 +175,18 @@ export const calculateNewGrid = (
       ...cell,
       merged: false,
       newTile: false,
+      moved: false,
     }));
     return moveAndMergeCells(
       isLeftOrUp(moveDirection) ? resetRow : reverseRow(resetRow),
-      row.length,
+      resetRow.length,
       moveDirection,
       isLeftOrUp(moveDirection)
-        ? row[0].positionX
-        : row[row.length - 1].positionX,
+        ? resetRow[0].positionX
+        : resetRow[resetRow.length - 1].positionX,
       isLeftOrUp(moveDirection)
-        ? row[0].positionY
-        : row[row.length - 1].positionY
+        ? resetRow[0].positionY
+        : resetRow[resetRow.length - 1].positionY
     );
   });
 
@@ -211,10 +215,18 @@ export const chunkArray = (myArray: Cell[], chunk_size: number): Grid => {
 
 export const fillRandomCell = (grid: Grid): Grid => {
   const length = grid.length;
-  const cellsWithValue = grid.flat().filter((cell) => cell.value !== null);
-  const cellsWithNullValue = grid.flat().filter((cell) => cell.value === null);
+  const flattenedGrid = grid.flat().map((cell) => ({
+    ...cell,
+    merged: false,
+    newTile: false,
+    moved: false,
+  }));
+  const cellsWithValue = flattenedGrid.filter((cell) => cell.value !== null);
+  const cellsWithNullValue = flattenedGrid.filter(
+    (cell) => cell.value === null
+  );
 
-  if (cellsWithNullValue.length === 0) {
+  if (flattenedGrid.length === 0) {
     return grid;
   }
 
