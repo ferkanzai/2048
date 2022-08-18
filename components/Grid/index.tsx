@@ -1,26 +1,11 @@
-import { useCallback, useEffect } from 'react';
 import styled from 'styled-components';
-import { useGame } from '../../hooks/useGame';
-import { gridHasPossibleMove } from '../../utils/game';
+import { Grid as GridType } from '../../types/game';
 
-const Grid = () => {
-  const { setIsGameOver, grid } = useGame();
+type Props = {
+  grid: GridType;
+};
 
-  const checkIfGameIsOver = useCallback(() => {
-    const leftMove = gridHasPossibleMove(grid, 'left');
-    const rightMove = gridHasPossibleMove(grid, 'right');
-    const upMove = gridHasPossibleMove(grid, 'up');
-    const downMove = gridHasPossibleMove(grid, 'down');
-
-    if (!leftMove && !rightMove && !upMove && !downMove) {
-      setIsGameOver(true);
-    }
-  }, [grid, setIsGameOver]);
-
-  useEffect(() => {
-    checkIfGameIsOver();
-  }, [checkIfGameIsOver, grid]);
-
+const Grid = ({ grid }: Props) => {
   return (
     <GridWrapper cells={grid.length}>
       {grid.map((row) =>
@@ -54,17 +39,11 @@ const Cell = styled.div<{
   newTile?: boolean;
   value: number | null;
 }>`
-  @keyframes appear {
+  @-webkit-keyframes appear {
     0% {
       opacity: 0;
       -webkit-transform: scale(0);
       -moz-transform: scale(0);
-    }
-
-    50% {
-      opacity: 0.5;
-      -webkit-transform: scale(0.5);
-      -moz-transform: scale(0.5);
     }
 
     100% {
@@ -80,29 +59,17 @@ const Cell = styled.div<{
       -moz-transform: scale(0);
     }
 
-    50% {
-      opacity: 0.5;
-      -webkit-transform: scale(0.5);
-      -moz-transform: scale(0.5);
-    }
-
     100% {
       opacity: 1;
       -webkit-transform: scale(1);
       -moz-transform: scale(1);
     }
   }
-  @-webkit-keyframes appear {
+  @keyframes appear {
     0% {
       opacity: 0;
       -webkit-transform: scale(0);
       -moz-transform: scale(0);
-    }
-
-    50% {
-      opacity: 0.5;
-      -webkit-transform: scale(0.5);
-      -moz-transform: scale(0.5);
     }
 
     100% {
@@ -174,6 +141,7 @@ const Cell = styled.div<{
   ${({ merged }) => {
     if (merged)
       return `
+        z-index: 20;
         -webkit-animation: pop 200ms ease 100ms;
         -moz-animation: pop 200ms ease 100ms;
         -webkit-animation-fill-mode: both;
@@ -201,7 +169,8 @@ const Cell = styled.div<{
     if (value === 256) return '#edcc61';
     if (value === 512) return '#edc850';
     if (value === 1024) return '#edc53f';
-    if (value >= 2048) return '#edc22e';
+    if (value === 2048) return '#edc22e';
+    if (value > 2048) return '#191919';
   }};
   border-radius: 4px;
   box-sizing: border-box;

@@ -142,7 +142,7 @@ const moveAndMergeCells = (
     second.value !== null
   ) {
     const newCells = mergeTwoCells(first, second);
-    newArr.push(newCells[0]);
+    newArr.push({ ...newCells[0], merged: true });
     arrToSend = [newCells[1], ...rest];
   } else {
     newArr.push(first);
@@ -213,7 +213,7 @@ export const chunkArray = (myArray: Cell[], chunk_size: number): Grid => {
   return tempArray;
 };
 
-export const fillRandomCell = (grid: Grid): Grid => {
+export const fillRandomCell = (grid: Grid, cellsToFill: number = 1): Grid => {
   const length = grid.length;
   const flattenedGrid = grid.flat().map((cell) => ({
     ...cell,
@@ -230,12 +230,17 @@ export const fillRandomCell = (grid: Grid): Grid => {
     return grid;
   }
 
-  const randomCell =
-    cellsWithNullValue[Math.floor(Math.random() * cellsWithNullValue.length)];
-  const randomValue = Math.random() < 0.9 ? 2 : 4;
+  for (let index = 0; index < cellsToFill; index++) {
+    const randomCell =
+      cellsWithNullValue[Math.floor(Math.random() * cellsWithNullValue.length)];
+    const randomValue = Math.random() < 0.9 ? 2 : 4;
 
-  randomCell.value = randomValue;
-  randomCell.newTile = true;
+    randomCell.value = randomValue;
+    randomCell.newTile = true;
+
+    cellsWithValue.push(randomCell);
+    cellsWithNullValue.splice(cellsWithNullValue.indexOf(randomCell), 1);
+  }
 
   const newCellsArray = [...cellsWithValue, ...cellsWithNullValue].sort(
     (a, b) => {
@@ -291,4 +296,17 @@ export const gridHasPossibleMove = (
   });
 
   return rowCanMove.some((row) => row);
+};
+
+export const checkIfGameIsOver = (grid: Grid) => {
+  const leftMove = gridHasPossibleMove(grid, 'left');
+  const rightMove = gridHasPossibleMove(grid, 'right');
+  const upMove = gridHasPossibleMove(grid, 'up');
+  const downMove = gridHasPossibleMove(grid, 'down');
+
+  if (!leftMove && !rightMove && !upMove && !downMove) {
+    return true;
+  }
+
+  return false;
 };
