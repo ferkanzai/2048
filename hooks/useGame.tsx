@@ -27,7 +27,7 @@ export const useGame = (length: number) => {
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (!isGameStarted) {
+      if (isGameStarted) {
         if (e.code === 'ArrowRight') {
           setGrid((prevGrid) => {
             return calculateNewGrid(prevGrid, 'right');
@@ -72,7 +72,7 @@ export const useGame = (length: number) => {
   });
 
   const handleSwipe = (eventData: SwipeEventData) => {
-    if (!isGameStarted) {
+    if (isGameStarted) {
       if (eventData.dir === 'Right') {
         setGrid((prevGrid) => {
           return calculateNewGrid(prevGrid, 'right');
